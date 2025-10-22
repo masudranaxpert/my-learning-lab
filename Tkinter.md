@@ -1,6 +1,6 @@
 # 🎨 Tkinter GUI Programming Guide
 
-A comprehensive guide to building graphical user interfaces with Python's Tkinter library.
+Python's Tkinter library.
 
 ---
 
@@ -439,9 +439,11 @@ button.image = photo
 ---
 
 
-## 📄 License
+## 📚 Eval Resources
 
-This guide is open for educational purposes.
+- [Python Mathematical Expression Evaluator](https://github.com/axiacore/py-expression-eval)
+- [simpleeval (Simple Eval)](https://github.com/danthedeckie/simpleeval)
+
 
 ---
 
