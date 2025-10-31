@@ -38,9 +38,10 @@ Normalization করা হয় যাতে সব image-এর pixel value এ�
 
 **Min–Max Normalization Formula:**
 
-\[
+$$
 x' = \frac{x - x_{min}}{x_{max} - x_{min}}
-\]
+$$
+
 
 **যেখানে:**
 - \( x \) = original pixel value  
