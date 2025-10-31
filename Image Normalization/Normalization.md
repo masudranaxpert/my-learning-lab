@@ -43,6 +43,14 @@ x' = \frac{x - x_{min}}{x_{max} - x_{min}}
 $$
 
 
+$$
+x = x' \times 255
+$$
+
+অর্থাৎ, normalized image-কে 255 দিয়ে গুণ করলে  
+তা আবার 0 থেকে 255 range-এর মধ্যে চলে আসে।
+
+
 **যেখানে:**
 - \( x \) = original pixel value  
 - \( x_{min} \), \( x_{max} \) = image-এর সর্বনিম্ন ও সর্বোচ্চ pixel value  
