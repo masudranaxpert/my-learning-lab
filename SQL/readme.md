@@ -776,8 +776,134 @@ HAVING AVG(salary) > 50000;
 
 
 
+<br>
+
+# ALIAS
+- ALIAS মানে **অন্য নাম দেওয়া**।
+
+```sql
+SELECT 
+    employee_id AS id,              -- employee_id কে id বলে ডাকা হলো
+    first_name || ' ' || last_name AS full_name,  -- এক্সপ্রেশনের ALIAS
+    salary * 12 AS annual_salary
+FROM employees;
 
 
 
+SELECT 
+    e.name, 
+    d.department_name
+FROM employees AS e          -- employees টেবিলকে e বলে ডাকা
+JOIN departments AS d        -- departments কে d বলা
+    ON e.department_id = d.department_id;
+```
 
 
+# JOIN
+
+| JOIN টাইপ | অর্থ (সহজ ভাষায়) | কখন ব্যবহার করবো? | সিনট্যাক্স উদাহরণ |
+|----------|------------------|-------------------|------------------|
+| INNER JOIN | শুধু দুই টেবিলের মধ্যে যেগুলো **মিলে যায়** সেই রো দেখাবে | সাধারণ ক্ষেত্রে, সবচেয়ে বেশি ব্যবহার হয় | `INNER JOIN` |
+| LEFT JOIN / LEFT OUTER JOIN | বাম টেবিলের সব রো + ডান টেবিলের মিলে যাওয়া রো (না মিললে `NULL`) | যখন বাম টেবিলের সব ডাটা চাই | `LEFT JOIN` |
+| RIGHT JOIN / RIGHT OUTER JOIN | ডান টেবিলের সব রো + বাম টেবিলের মিলে যাওয়া রো | যখন ডান টেবিলের সব ডাটা চাই | `RIGHT JOIN` |
+| FULL OUTER JOIN | দুই টেবিলের সব রো (মিলে যাওয়া + না মিলে যাওয়া সব) | যখন দুই দিকেরই সব ডাটা চাই | `FULL OUTER JOIN` |
+| CROSS JOIN | প্রত্যেক রো সবার সাথে মিলবে (Cartesian Product) | খুব কম ব্যবহার হয়, সাধারণত টেস্টিংয়ে | `CROSS JOIN` |
+
+
+```sql
+-- ১. INNER JOIN (সবচেয়ে কমন)
+SELECT 
+    e.employee_id,
+    e.name AS employee_name,
+    d.department_name,
+    e.salary
+FROM employees e
+INNER JOIN departments d
+    ON e.department_id = d.department_id
+WHERE e.salary > 50000
+ORDER BY e.salary DESC;
+
+-- ২. LEFT JOIN (সব কর্মচারী দেখাবে, বিভাগ না থাকলেও)
+SELECT 
+    e.name,
+    e.salary,
+    d.department_name
+FROM employees e
+LEFT JOIN departments d
+    ON e.department_id = d.department_id;
+
+-- ৩. একই টেবিলে JOIN (self-join) - ম্যানেজারের নাম দেখা
+SELECT 
+    e.employee_id,
+    e.name AS employee,
+    m.name AS manager
+FROM employees e
+LEFT JOIN employees m
+    ON e.manager_id = m.employee_id;
+
+-- ৪. তিনটা টেবিল JOIN
+SELECT 
+    e.name,
+    d.department_name,
+    l.city
+FROM employees e
+INNER JOIN departments d ON e.department_id = d.department_id
+INNER JOIN locations l ON d.location_id = l.location_id;
+```
+
+<br>
+
+**employees** টেবিল (বাম দিকে)
+
+| employee_id | name       | dept_id |
+
+|-------------|------------|---------|
+
+| 1           | Rahim      | 101     |
+
+| 2           | Karim      | 102     |
+
+| 3           | Sumon      | 103     |
+
+| 4           | Rina       | NULL    |
+
+
+
+**departments** টেবিল (ডান দিকে)
+
+| dept_id | dept_name     |
+
+|---------|---------------|
+
+| 101     | Sales         |
+
+| 102     | Marketing     |
+
+| 104     | HR            |
+
+
+### 1. INNER JOIN 
+
+শুধু যেগুলো দুই টেবিলেই মিলে গেছে সেগুলোই দেখাবে।  
+
+```sql
+
+SELECT e.name, d.dept_name
+
+FROM employees e
+
+INNER JOIN departments d ON e.dept_id = d.dept_id;
+
+```
+
+**ফলাফল:**
+
+| name   | dept_name   |
+
+|--------|-------------|
+
+| Rahim  | Sales       |
+
+| Karim  | Marketing   |
+
+→ Sumon আর Rina দেখা যায়নি কারণ তাদের dept_id departments টেবিলে নেই।  
