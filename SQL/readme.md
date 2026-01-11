@@ -143,6 +143,87 @@ INSERT INTO test(student_id, name, age)
 VALUES
 (1, 'masud', 25);
 ```
+
+## Update
+
+> WHERE ক্লজ না দিলে পুরো টেবিলের সব রেকর্ড আপডেট হয়ে যাবে!
+
+```sql
+UPDATE table_name
+SET col1 = val1, cal2 = val2
+WHERE condition;
+
+```
+
+```sql
+-- ১. পুরো একটা বিভাগের সব কর্মচারীর বেতন ১২% বাড়ানো
+UPDATE employees
+SET salary = salary * 1.12
+WHERE department = 'Sales';
+
+
+-- ২. ২০২৪ সালে জয়েন করা সবাইকে বোনাস দাও
+UPDATE employees
+SET bonus = 10000
+WHERE hire_date >= '2024-01-01'
+  AND hire_date <= '2024-12-31';
+
+
+-- ৩. দাম ৫০০০+ এবং স্টক ১০ এর কম হলে স্টক আপডেট + স্ট্যাটাস চেঞ্জ
+UPDATE products
+SET 
+    stock = stock + 50,
+    status = 'low_stock_alert'
+WHERE price > 5000 
+  AND stock < 10;
+
+
+-- ৪. একাধিক শর্ত দিয়ে অনেক রো আপডেট
+UPDATE students
+SET 
+    status = 'passed',
+    grade = 'A'
+WHERE 
+    marks >= 80 
+    AND semester = 'Spring 2025'
+    AND department IN ('CSE', 'EEE', 'ME');
+
+-- সরাসরি employee_id জানো অনেক রো আপডেট
+UPDATE employees
+SET salary = salary + 10000
+WHERE employee_id IN (103, 108);
+```
+
+## DELETE
+
+- `DELETE` দিয়ে টেবিল থেকে এক বা একাধিক রেকর্ড (row) **স্থায়ীভাবে মুছে ফেলা** হয়।
+- `WHERE` ক্লজ না দিলে পুরো টেবিলের সব রেকর্ড মুছে যাবে!
+
+```sql
+DELETE FROM table_name
+WHERE condition;
+```
+
+```sql
+-- ১. একজন নির্দিষ্ট কর্মচারীকে মুছে ফেলা
+DELETE FROM employees
+WHERE employee_id = 105;
+
+-- ২. পুরো একটা বিভাগের সব কর্মচারী মুছে ফেলা
+DELETE FROM employees
+WHERE department = 'Intern';
+
+-- ৩. একাধিক শর্ত দিয়ে মুছে ফেলা
+DELETE FROM products
+WHERE 
+    category = 'Old Stock'
+    AND stock = 0
+    AND last_updated < '2024-01-01';
+```
+
+
+
+
 ### Practice
 
 ```sql
@@ -251,6 +332,56 @@ SELECT * FROM table_name ORDER BY column_name ASC;
 SELECT * FROM table_name ORDER BY column_name DESC; 
 
 ```
+
+<br>
+
+# ALTER TABLE
+- `ALTER TABLE` দিয়ে ইতিমধ্যে তৈরি হয়ে যাওয়া টেবিলে পরিবর্তন করা হয়।
+
+| কাজ                              | সিনট্যাক্স (সহজ উদাহরণ)                                                                 |
+|----------------------------------|------------------------------------------------------------------------------------------|
+| নতুন কলাম যোগ করা                | `ALTER TABLE employees ADD COLUMN bonus INT DEFAULT 0;`                                 |
+| কলাম মুছে ফেলা                   | `ALTER TABLE employees DROP COLUMN bonus;`                                               |
+| কলামের নাম পরিবর্তন               | `ALTER TABLE employees RENAME COLUMN old_name TO new_name;`                             |
+| কলামের ডাটা টাইপ পরিবর্তন         | `ALTER TABLE employees ALTER COLUMN salary TYPE DECIMAL(12,2);`                         |
+| NOT NULL যোগ করা                 | `ALTER TABLE employees ALTER COLUMN name SET NOT NULL;`                                  |
+| NOT NULL মুছে ফেলা               | `ALTER TABLE employees ALTER COLUMN name DROP NOT NULL;`                                 |
+| PRIMARY KEY যোগ করা              | `ALTER TABLE employees ADD PRIMARY KEY (employee_id);`                                   |
+| FOREIGN KEY যোগ করা              | `ALTER TABLE employees ADD FOREIGN KEY (department_id) REFERENCES departments(department_id);` |
+| UNIQUE CONSTRAINT যোগ করা        | `ALTER TABLE employees ADD UNIQUE (email);`                                              |
+| DEFAULT ভ্যালু যোগ/পরিবর্তন      | `ALTER TABLE employees ALTER COLUMN status SET DEFAULT 'active';`                       |
+| টেবিলের নাম পরিবর্তন             | `ALTER TABLE old_employees RENAME TO employees;`                                         |
+
+
+```sql
+-- ১. নতুন কলাম যোগ + ডিফল্ট ভ্যালু
+ALTER TABLE employees
+ADD COLUMN join_date DATE DEFAULT CURRENT_DATE;
+
+-- ২. কলামের ডাটা টাইপ বড় করা (যদি ছোট থেকে বড় করতে চাও)
+ALTER TABLE products
+ALTER COLUMN description TYPE TEXT;
+
+-- ৩. একসাথে একাধিক পরিবর্তন (PostgreSQL/MySQL)
+ALTER TABLE employees
+    ADD COLUMN phone VARCHAR(15),
+    ALTER COLUMN salary TYPE DECIMAL(10,2),
+    ALTER COLUMN salary SET DEFAULT 30000,
+    DROP COLUMN temp_column;
+
+-- ৪. FOREIGN KEY যোগ করা (পুরানো টেবিলে)
+ALTER TABLE orders
+ADD CONSTRAINT fk_customer
+FOREIGN KEY (customer_id) 
+REFERENCES customers(customer_id)
+ON DELETE CASCADE;
+
+-- ৫. ইনডেক্স যোগ করা (পারফরম্যান্সের জন্য)
+ALTER TABLE employees
+ADD INDEX idx_department (department_id);
+
+```
+
 
 <br>
 
@@ -380,7 +511,60 @@ CREATE TABLE city3(
 
 <br>
 
+# SQL - FOREIGN KEY
+**FOREIGN KEY** হলো একটা টেবিলের কলাম (বা কলামগুলো) যেটা অন্য আরেকটা টেবিলের **PRIMARY KEY** বা **UNIQUE** কলামের সাথে সম্পর্ক রাখে।  
+এটা ডাটাবেসে **রেফারেন্সিয়াল ইন্টিগ্রিটি** (referential integrity) বজায় রাখে।
 
+1. **departments** টেবিল (বিভাগ)  
+   - department_id (PK)  
+   - department_name  
+
+2. **employees** টেবিল (কর্মচারী)  
+   - employee_id (PK)  
+   - name  
+   - department_id ← এটাই FOREIGN KEY (যেটা departments টেবিলের department_id কে রেফার করে)
+  
+```sql
+CREATE TABLE departments (
+    department_id   INT PRIMARY KEY,
+    department_name VARCHAR(100) NOT NULL
+);
+
+CREATE TABLE employees (
+    employee_id     INT PRIMARY KEY,
+    name            VARCHAR(100) NOT NULL,
+    department_id   INT,
+    
+    FOREIGN KEY (department_id) 
+        REFERENCES departments(department_id)
+);
+```
+
+### আলাদা করে FOREIGN KEY যোগ করা (পরে)
+
+```sql
+ALTER TABLE employees
+ADD FOREIGN KEY (department_id) 
+REFERENCES departments(department_id);
+```
+
+### সবচেয়ে বেশি ব্যবহৃত উদাহরণ (CASCADE)
+
+```sql
+CREATE TABLE employees (
+    employee_id     INT PRIMARY KEY,
+    name            VARCHAR(100),
+    department_id   INT,
+    
+    FOREIGN KEY (department_id) 
+        REFERENCES departments(department_id)
+        ON DELETE CASCADE           -- বিভাগ ডিলিট হলে সব কর্মচারীও অটো ডিলিট
+        ON UPDATE CASCADE           -- বিভাগের আইডি চেঞ্জ হলে কর্মচারীর আইডিও চেঞ্জ
+);
+```
+
+
+<br>
 
 # Aggregate Function
 
