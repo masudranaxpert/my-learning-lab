@@ -853,38 +853,29 @@ INNER JOIN locations l ON d.location_id = l.location_id;
 
 <br>
 
-**employees** টেবিল (বাম দিকে)
+## employees টেবিল (বাম দিকে)
 
-| employee_id | name       | dept_id |
+| employee_id | name  | dept_id |
+|-------------|-------|---------|
+| 1           | Rahim | 101     |
+| 2           | Karim | 102     |
+| 3           | Sumon | 103     |
+| 4           | Rina  | NULL    |
 
-|-------------|------------|---------|
+---
 
-| 1           | Rahim      | 101     |
+## departments টেবিল (ডান দিকে)
 
-| 2           | Karim      | 102     |
+| dept_id | dept_name |
+|---------|-----------|
+| 101     | Sales     |
+| 102     | Marketing |
+| 104     | HR        |
 
-| 3           | Sumon      | 103     |
-
-| 4           | Rina       | NULL    |
-
-
-
-**departments** টেবিল (ডান দিকে)
-
-| dept_id | dept_name     |
-
-|---------|---------------|
-
-| 101     | Sales         |
-
-| 102     | Marketing     |
-
-| 104     | HR            |
-
+---
 
 ### 1. INNER JOIN 
-
-শুধু যেগুলো দুই টেবিলেই মিলে গেছে সেগুলোই দেখাবে।  
+- শুধু যেগুলো দুই টেবিলেই মিলে গেছে সেগুলোই দেখাবে।
 
 ```sql
 
@@ -892,18 +883,16 @@ SELECT e.name, d.dept_name
 
 FROM employees e
 
-INNER JOIN departments d ON e.dept_id = d.dept_id;
+FULL OUTER JOIN departments d ON e.dept_id = d.dept_id;
 
 ```
 
 **ফলাফল:**
 
 | name   | dept_name   |
-
 |--------|-------------|
-
 | Rahim  | Sales       |
-
 | Karim  | Marketing   |
 
-→ Sumon আর Rina দেখা যায়নি কারণ তাদের dept_id departments টেবিলে নেই।  
+→ **Sumon** আর **Rina** দেখা যায়নি কারণ তাদের `dept_id`  
+`departments` টেবিলে নেই।
