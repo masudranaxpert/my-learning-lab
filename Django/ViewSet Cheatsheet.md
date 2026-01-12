@@ -48,3 +48,80 @@ class MealViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
+```
+
+<br>
+
+<br>
+
+
+```python
+class MealViewSet(viewsets.ModelViewSet):
+    """
+    Production-ready Meal ViewSet Example
+    Covers: Authentication, Pagination, Filtering, Search, Ordering, User-scoping
+    """
+
+    # মেইন সেটিংস
+    serializer_class       = MealSerializer
+    permission_classes     = [IsAuthenticated]
+    authentication_classes = [TokenAuthentication]  # অথবা Session + Token মিলিয়ে
+
+    # ১. Pagination (খুব জরুরি – large data এর জন্য mandatory)
+    pagination_class = PageNumberPagination   # অথবা LimitOffsetPagination / CursorPagination
+
+    # ২. Filtering + Search + Ordering (এগুলো ছাড়া API অসম্পূর্ণ)
+    filter_backends = [
+        DjangoFilterBackend,
+        SearchFilter,
+        OrderingFilter,
+    ]
+    filterset_fields = ['date', 'meal_type']          # ?date=2026-01-12
+    search_fields    = ['note', 'items__food__name']  # ?search=ভাত
+    ordering_fields  = ['date', 'created_at']         # ?ordering=-date
+    ordering         = ['-date']                      # ডিফল্ট সর্ট
+
+    # ৩. Lookup কাস্টম করা (UUID / slug চাইলে)
+    # lookup_field = 'uuid'           # যদি pk এর বদলে uuid ব্যবহার করো
+    # lookup_url_kwarg = 'uuid'       # URL-এ ?uuid=... হলে
+
+    # ৪. Allowed HTTP methods (security hardening)
+    http_method_names = ['get', 'post', 'put', 'patch', 'delete', 'head', 'options']
+
+    # ৫. queryset স্কোপ করা (সবচেয়ে গুরুত্বপূর্ণ)
+    def get_queryset(self):
+        return Meal.objects.filter(user=self.request.user).order_by('-date')
+
+    # ৬. Create-এ অটো user যোগ
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
+
+    # ৭. Update-এ অতিরিক্ত লজিক (যদি লাগে)
+    def perform_update(self, serializer):
+        serializer.save(updated_by=self.request.user)  # optional
+
+    # ৮. Custom actions – ViewSet এর আসল শক্তি
+    @action(detail=False, methods=['get'], url_path='today')
+    def today_meals(self, request):
+        today = timezone.now().date()
+        meals = self.get_queryset().filter(date=today)
+        serializer = self.get_serializer(meals, many=True)
+        return Response(serializer.data)
+
+    @action(detail=True, methods=['post'], url_path='add-item')
+    def add_item(self, request, pk=None):
+        meal = self.get_object()
+        # এখানে MealItem যোগ করার লজিক
+        return Response({"message": "Item added"})
+
+    # ৯. Custom response (optional – আরো user-friendly)
+    def list(self, request, *args, **kwargs):
+        response = super().list(request, *args, **kwargs)
+        response.data = {
+            "status": "success",
+            "count": response.data.get("count"),
+            "results": response.data.get("results"),
+            "message": "Meals fetched successfully"
+        }
+        return response
+```
